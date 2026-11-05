@@ -5,4 +5,5 @@
 *.css text eol=lf
 *.md text eol=lf
 *.yml text eol=lf
-*.cmd text eol=crlf
+# Preserve the ASCII CRLF launcher in GitHub ZIP downloads too.
+*.cmd -text
