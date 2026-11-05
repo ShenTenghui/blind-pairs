@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="把两版回答、译文或说明放在一起，隐藏来源先比较，再揭晓。离线使用的小工具。">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>回答盲选板 · Blind Pairs</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <script src="core.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">跳到主要内容</a>
+<div class="shell">
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">b/p</span><span>回答盲选板<small>BLIND PAIRS</small></span></div>
+    <nav aria-label="主要导航"><button id="new-nav" class="nav active" type="button">新建对照</button><button id="history-nav" class="nav" type="button">我的记录 <span id="count">0</span></button></nav>
+    <span class="local-tag"><i aria-hidden="true"></i> 本地使用</span>
+  </header>
+  <main id="main">
+    <div id="notice" role="status" class="notice" hidden></div>
+    <div id="storage-warning" role="alert" class="warning" hidden></div>
+    <section id="compose" aria-labelledby="compose-heading">
+      <div class="intro"><p class="eyebrow">A LITTLE LESS BIAS.</p><h1 id="compose-heading">先看内容，<br>再看来源<span class="orange">。</span></h1><div class="intro-right"><p>两版回答、两段译文，或同一条规则的两种解释。<br>随机换个位置，选出更合你意的一版。</p><button id="sample" class="text-button" type="button">没有材料？填入一组演示 <span aria-hidden="true">↗</span></button></div></div>
+      <ol class="steps" aria-label="使用顺序"><li><b>01</b> 放入两版内容</li><li><b>02</b> 隐藏来源比较</li><li><b>03</b> 记下理由，再揭晓</li></ol>
+      <form id="pair-form">
+        <div class="question-field"><label for="question">这次比较什么？ <span>问题 / 原文 / 场景</span></label><textarea id="question" rows="2" maxlength="6000" required placeholder="例如：怎样向第一次玩的朋友解释这个游戏？"></textarea></div>
+        <div class="pair-grid">
+          <section class="input-card"><div class="card-top"><h2><span class="pill">01</span> 第一版</h2><span class="muted">原文保留</span></div><label class="sr-only" for="text-one">第一版内容</label><textarea id="text-one" class="candidate-input" maxlength="30000" rows="9" required placeholder="粘贴第一版内容。不会自动润色或改写。"></textarea><div class="source-field"><label for="source-one">来源标签</label><input id="source-one" maxlength="160" placeholder="可选，例如：第一次回答 / 自己改写"></div></section>
+          <section class="input-card"><div class="card-top"><h2><span class="pill">02</span> 第二版</h2><span class="muted">原文保留</span></div><label class="sr-only" for="text-two">第二版内容</label><textarea id="text-two" class="candidate-input" maxlength="30000" rows="9" required placeholder="粘贴另一版内容。长短不同也没关系。"></textarea><div class="source-field"><label for="source-two">来源标签</label><input id="source-two" maxlength="160" placeholder="可选，例如：第二次回答 / 另一种译法"></div></section>
+        </div>
+        <div class="form-bottom"><p>开始后随机左右顺序，来源到确认选择后揭晓。<br><span id="draft-state">未开始的输入会尽量保存在当前浏览器。</span></p><button class="primary" type="submit">隐藏来源，开始比较 <span aria-hidden="true">→</span></button></div>
+      </form>
+      <details class="how"><summary>本地保存与盲选边界</summary><p>内容只保存在当前浏览器，本工具不发网络请求。浏览器限制、清理数据或移动文件后可能无法恢复，请用“我的记录 → 导出 JSON 备份”保存。</p><p>自己粘贴时可能已经记得来源，文风也可能被认出。隐藏标签只减少显式提示，不能消除记忆和偏好。记录反映个人在具体题目上的选择，不是模型能力排行榜。</p><p>导出的备份含原文和来源；“隐藏”是界面行为，不是加密。准备分享时请先检查文件。</p></details>
+    </section>
+    <section id="compare" hidden aria-labelledby="compare-heading">
+      <div class="section-heading"><div><p id="stage" class="eyebrow">02 / 比较</p><h1 id="compare-heading">这一版，还是那一版？</h1></div><button id="another" class="secondary" type="button">再建一组 <span aria-hidden="true">＋</span></button></div>
+      <div class="prompt-box"><span class="muted">这次比较</span><p id="pair-question"></p></div>
+      <div id="revealed-banner" class="result-banner" hidden></div>
+      <div class="pair-grid reading-grid"><article class="reading-card"><div class="card-top"><h2>左边</h2><span id="left-source" class="source-tag" hidden></span></div><div id="left-text" class="reading-text"></div></article><article class="reading-card"><div class="card-top"><h2>右边</h2><span id="right-source" class="source-tag" hidden></span></div><div id="right-text" class="reading-text"></div></article></div>
+      <form id="decision-form" class="decision"><fieldset><legend>读完了，你的选择是？</legend><div class="choices"><label><input type="radio" name="choice" value="left" required><span>← 左边更好</span></label><label><input type="radio" name="choice" value="right"><span>右边更好 →</span></label><label><input type="radio" name="choice" value="tie"><span>差不多</span></label><label><input type="radio" name="choice" value="neither"><span>都不太行</span></label></div></fieldset><label for="reason">为什么这样选？ <span class="muted">可选，留下一句具体理由更方便回看</span></label><textarea id="reason" maxlength="4000" rows="3" placeholder="哪一句更清楚？哪里有错误？有没有遗漏条件？"></textarea><div class="form-bottom"><p>确认后锁定本次选择，揭晓来源。<br>想重新比较，可以另建一组。</p><button class="primary" type="submit">确认选择并揭晓 <span aria-hidden="true">↗</span></button></div></form>
+      <div id="result-note" class="result-note" hidden><h2>选择理由</h2><p id="saved-reason"></p><div class="result-actions"><button id="export-one" class="secondary" type="button">导出这条 Markdown</button><button id="reuse" class="text-button" type="button">复制内容，再比较一次 →</button></div></div>
+      <p class="footnote">未确认的选择和理由只保留在当前页面，离开后需重填。隐藏来源不等于消除记忆或文风提示。你的选择只代表这一次具体比较。</p>
+    </section>
+    <section id="history" hidden aria-labelledby="history-heading">
+      <div class="section-heading"><div><p class="eyebrow">YOUR LITTLE NOTEBOOK.</p><h1 id="history-heading">留下每次选择。</h1></div><button id="history-new" class="primary" type="button">新建对照 ＋</button></div>
+      <div class="history-toolbar"><p id="history-summary"></p><div><button id="export-json" class="secondary" type="button">导出 JSON 备份</button><button id="export-md" class="secondary" type="button">导出 Markdown</button><button id="import" class="text-button" type="button">导入备份</button><input id="import-file" type="file" accept=".json,application/json" hidden></div></div>
+      <div id="history-list"></div><div id="empty" class="empty"><span aria-hidden="true">↔</span><h2>还没有对照记录</h2><p>从两版内容开始，留下一次自己的选择。</p><button id="empty-new" class="primary" type="button">新建第一组</button></div>
+      <div class="history-bottom"><p>最多保存 100 组。进行中的对照也会保留。<br>JSON 用于恢复；Markdown 用于阅读，不能重新导入。</p><button id="clear" class="danger" type="button">清空本工具数据</button></div>
+    </section>
+  </main>
+  <footer><span>BLIND PAIRS <span aria-hidden="true">/</span> 回答盲选板</span><span>无账号 · 无模型调用 · 支持离线</span></footer>
+</div>
+<dialog id="confirm-dialog"><form method="dialog"><h2 id="confirm-title">确认操作</h2><p id="confirm-text"></p><div class="dialog-actions"><button value="cancel" class="secondary">取消</button><button id="confirm-ok" value="ok" class="primary">确认</button></div></form></dialog>
+</body></html>

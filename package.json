@@ -1,0 +1,9 @@
+{
+  "name": "blind-pairs",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Compare two texts with source labels hidden, choose, then reveal. Offline and browser-local.",
+  "license": "MIT",
+  "scripts": { "test": "node --check dist/app.js && node --check dist/core.js && node --test tests/*.test.cjs" },
+  "engines": { "node": ">=22" }
+}
